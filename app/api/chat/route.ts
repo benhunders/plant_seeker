@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, MODEL } from '@/lib/anthropic';
+import { DEFAULT_LOCALE, isLocale, languageName } from '@/lib/i18n';
 import type { CareInfo, ChatMessage } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -10,6 +11,7 @@ type ChatBody = {
   scientificName?: string;
   care?: CareInfo;
   messages?: ChatMessage[];
+  locale?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -36,13 +38,17 @@ export async function POST(req: NextRequest) {
 - Summary: ${body.care.summary}`
     : 'No stored care profile is available.';
 
+  const locale = isLocale(body.locale) ? body.locale : DEFAULT_LOCALE;
+
   const system = `You are a warm, practical plant-care assistant helping someone look after their ${
     body.commonName || 'plant'
   }${body.scientificName ? ` (${body.scientificName})` : ''}.
 
 ${careContext}
 
-Answer the owner's questions with short, concrete, encouraging guidance. Prefer plain language over jargon. If a question is outside plant care, gently steer back. Keep answers to a few sentences unless more detail is clearly needed.`;
+Answer the owner's questions with short, concrete, encouraging guidance. Prefer plain language over jargon. If a question is outside plant care, gently steer back. Keep answers to a few sentences unless more detail is clearly needed.
+
+Always respond in ${languageName(locale)}, regardless of the language the question is written in.`;
 
   try {
     const response = await anthropic.messages.create({

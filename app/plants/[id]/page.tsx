@@ -8,6 +8,7 @@ import ScheduleList from '@/components/ScheduleList';
 import ChatBox from '@/components/ChatBox';
 import { usePlants } from '@/lib/storage';
 import { completeTask } from '@/lib/schedule';
+import { useI18n } from '@/components/I18nProvider';
 
 export default function PlantDetailPage({
   params,
@@ -17,21 +18,22 @@ export default function PlantDetailPage({
   const { id } = use(params);
   const router = useRouter();
   const { plants, ready, updatePlant, removePlant } = usePlants();
+  const { t } = useI18n();
   const plant = plants.find((p) => p.id === id);
 
   if (!ready) {
-    return <p className="py-10 text-center text-leaf-600">Loading…</p>;
+    return <p className="py-10 text-center text-leaf-600">{t('plants_loading')}</p>;
   }
 
   if (!plant) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-leaf-700">That plant wasn&apos;t found.</p>
+        <p className="text-leaf-700">{t('detail_notFound')}</p>
         <Link
           href="/plants"
           className="rounded-xl bg-leaf-500 px-5 py-2.5 font-semibold text-white hover:bg-leaf-600"
         >
-          Back to my plants
+          {t('detail_back')}
         </Link>
       </div>
     );
@@ -45,7 +47,8 @@ export default function PlantDetailPage({
   }
 
   function handleDelete() {
-    if (window.confirm(`Remove ${plant!.nickname || plant!.commonName}?`)) {
+    const name = plant!.nickname || plant!.commonName;
+    if (window.confirm(t('detail_confirmRemove', { name }))) {
       removePlant(id);
       router.push('/plants');
     }
@@ -70,7 +73,7 @@ export default function PlantDetailPage({
 
       <section>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-leaf-600">
-          Care schedule
+          {t('home_careSchedule')}
         </h2>
         <ScheduleList schedule={plant.schedule} onComplete={markDone} />
       </section>
@@ -85,7 +88,7 @@ export default function PlantDetailPage({
         onClick={handleDelete}
         className="w-full rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50"
       >
-        Remove plant
+        {t('detail_remove')}
       </button>
     </div>
   );

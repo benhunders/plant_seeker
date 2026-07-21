@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import type { CareInfo, ChatMessage } from '@/lib/types';
+import { useI18n } from '@/components/I18nProvider';
 
 export default function ChatBox({
   commonName,
@@ -17,6 +18,7 @@ export default function ChatBox({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listEndRef = useRef<HTMLDivElement>(null);
+  const { t, locale } = useI18n();
 
   async function send() {
     const text = input.trim();
@@ -30,16 +32,16 @@ export default function ChatBox({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ commonName, scientificName, care, messages: next }),
+        body: JSON.stringify({ commonName, scientificName, care, messages: next, locale }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Request failed.');
+      if (!res.ok) throw new Error(data.error || t('chat_requestFailed'));
       setMessages([...next, { role: 'assistant', content: data.reply }]);
       requestAnimationFrame(() =>
         listEndRef.current?.scrollIntoView({ behavior: 'smooth' }),
       );
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
+      setError(e instanceof Error ? e.message : t('home_genericError'));
     } finally {
       setLoading(false);
     }
@@ -48,7 +50,7 @@ export default function ChatBox({
   return (
     <section className="rounded-2xl border border-leaf-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-leaf-600">
-        Ask about this plant
+        {t('chat_title')}
       </h2>
 
       {messages.length > 0 && (
@@ -67,7 +69,7 @@ export default function ChatBox({
           ))}
           {loading && (
             <div className="max-w-[85%] rounded-2xl bg-leaf-50 px-3 py-2 text-sm text-leaf-600">
-              Thinking…
+              {t('chat_thinking')}
             </div>
           )}
           <div ref={listEndRef} />
@@ -86,7 +88,7 @@ export default function ChatBox({
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="e.g. Why are the leaves yellow?"
+          placeholder={t('chat_placeholder')}
           className="flex-1 rounded-xl border border-leaf-200 px-3 py-2 text-sm outline-none focus:border-leaf-400"
         />
         <button
@@ -94,7 +96,7 @@ export default function ChatBox({
           disabled={loading || !input.trim()}
           className="rounded-xl bg-leaf-500 px-4 py-2 text-sm font-semibold text-white hover:bg-leaf-600 disabled:opacity-50"
         >
-          Ask
+          {t('chat_ask')}
         </button>
       </form>
     </section>

@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import PlantCard from '@/components/PlantCard';
 import { usePlants } from '@/lib/storage';
-import { dueToday } from '@/lib/schedule';
+import { dueToday, todayISO } from '@/lib/schedule';
+import { useI18n } from '@/components/I18nProvider';
 
 const TASK_ICON: Record<string, string> = {
   water: '💧',
@@ -15,9 +16,10 @@ const TASK_ICON: Record<string, string> = {
 
 export default function PlantsPage() {
   const { plants, ready } = usePlants();
+  const { t } = useI18n();
 
   if (!ready) {
-    return <p className="py-10 text-center text-leaf-600">Loading…</p>;
+    return <p className="py-10 text-center text-leaf-600">{t('plants_loading')}</p>;
   }
 
   if (plants.length === 0) {
@@ -26,12 +28,12 @@ export default function PlantsPage() {
         <span className="text-5xl" aria-hidden>
           🪴
         </span>
-        <p className="text-leaf-700">You haven&apos;t saved any plants yet.</p>
+        <p className="text-leaf-700">{t('plants_emptyMsg')}</p>
         <Link
           href="/"
           className="rounded-xl bg-leaf-500 px-5 py-2.5 font-semibold text-white hover:bg-leaf-600"
         >
-          Identify your first plant
+          {t('plants_identifyFirst')}
         </Link>
       </div>
     );
@@ -43,11 +45,11 @@ export default function PlantsPage() {
     <div className="space-y-6">
       <section>
         <h1 className="mb-2 text-sm font-semibold uppercase tracking-wide text-leaf-600">
-          Today
+          {t('plants_today')}
         </h1>
         {due.length === 0 ? (
           <p className="rounded-2xl border border-leaf-200 bg-white p-4 text-sm text-leaf-600">
-            🎉 Nothing due today. Your plants are all set.
+            {t('plants_nothingDue')}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -69,9 +71,7 @@ export default function PlantsPage() {
                     </p>
                   </div>
                   <span className="text-xs font-semibold text-rose-600">
-                    {task.nextDue < new Date().toISOString().slice(0, 10)
-                      ? 'Overdue'
-                      : 'Due'}
+                    {task.nextDue < todayISO() ? t('due_overdue') : t('due_short')}
                   </span>
                 </Link>
               </li>
@@ -82,7 +82,7 @@ export default function PlantsPage() {
 
       <section>
         <h1 className="mb-2 text-sm font-semibold uppercase tracking-wide text-leaf-600">
-          My plants
+          {t('plants_myPlants')}
         </h1>
         <div className="space-y-2">
           {plants.map((plant) => (

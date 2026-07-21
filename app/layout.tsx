@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
-import Link from 'next/link';
+import { I18nProvider } from '@/components/I18nProvider';
+import AppHeader from '@/components/AppHeader';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,20 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
-          <header className="sticky top-0 z-10 flex items-center justify-between border-b border-leaf-200 bg-leaf-50/90 px-4 py-3 backdrop-blur">
-            <Link href="/" className="flex items-center gap-2 text-lg font-bold text-leaf-700">
-              <span aria-hidden>🌿</span> Plant Seeker
-            </Link>
-            <Link
-              href="/plants"
-              className="text-sm font-medium text-leaf-600 hover:text-leaf-800"
-            >
-              My plants
-            </Link>
-          </header>
-          <main className="flex-1 px-4 py-5">{children}</main>
-        </div>
+        <I18nProvider>
+          <div className="mx-auto flex min-h-screen w-full max-w-md flex-col">
+            <AppHeader />
+            <main className="flex-1 px-4 py-5">{children}</main>
+          </div>
+        </I18nProvider>
       </body>
     </html>
   );

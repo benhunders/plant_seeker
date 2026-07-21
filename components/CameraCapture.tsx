@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useI18n } from '@/components/I18nProvider';
 
 const TASK_ICON = '📷';
 
@@ -46,6 +47,7 @@ export default function CameraCapture({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -56,7 +58,7 @@ export default function CameraCapture({
       const dataUrl = await fileToDataUrl(file);
       onCapture(dataUrl);
     } catch {
-      setError('Sorry, that image could not be read. Try another photo.');
+      setError(t('capture_readError'));
     }
   }
 
@@ -77,7 +79,7 @@ export default function CameraCapture({
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-leaf-500 px-6 py-4 text-lg font-semibold text-white shadow-sm transition hover:bg-leaf-600 disabled:opacity-50"
       >
         <span aria-hidden>{TASK_ICON}</span>
-        Identify a plant
+        {t('capture_identify')}
       </button>
       {error && <p className="text-sm text-rose-600">{error}</p>}
     </div>

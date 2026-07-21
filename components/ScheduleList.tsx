@@ -2,6 +2,7 @@
 
 import type { CareTask } from '@/lib/types';
 import { isDue, todayISO } from '@/lib/schedule';
+import { useI18n } from '@/components/I18nProvider';
 
 const TASK_ICON: Record<CareTask['type'], string> = {
   water: '💧',
@@ -11,18 +12,6 @@ const TASK_ICON: Record<CareTask['type'], string> = {
   mist: '💨',
 };
 
-function relativeDue(nextDue: string): string {
-  const ref = todayISO();
-  if (nextDue < ref) return 'Overdue';
-  if (nextDue === ref) return 'Due today';
-  const days = Math.round(
-    (new Date(`${nextDue}T00:00:00`).getTime() -
-      new Date(`${ref}T00:00:00`).getTime()) /
-      86400000,
-  );
-  return days === 1 ? 'Tomorrow' : `In ${days} days`;
-}
-
 export default function ScheduleList({
   schedule,
   onComplete,
@@ -30,8 +19,22 @@ export default function ScheduleList({
   schedule: CareTask[];
   onComplete?: (taskId: string) => void;
 }) {
+  const { t } = useI18n();
+
+  function relativeDue(nextDue: string): string {
+    const ref = todayISO();
+    if (nextDue < ref) return t('due_overdue');
+    if (nextDue === ref) return t('due_today');
+    const days = Math.round(
+      (new Date(`${nextDue}T00:00:00`).getTime() -
+        new Date(`${ref}T00:00:00`).getTime()) /
+        86400000,
+    );
+    return days === 1 ? t('due_tomorrow') : t('due_inDays', { n: days });
+  }
+
   if (schedule.length === 0) {
-    return <p className="text-sm text-leaf-600">No care tasks yet.</p>;
+    return <p className="text-sm text-leaf-600">{t('sched_none')}</p>;
   }
 
   return (
@@ -51,7 +54,7 @@ export default function ScheduleList({
               <p
                 className={`text-xs ${due ? 'font-semibold text-rose-600' : 'text-leaf-600'}`}
               >
-                {relativeDue(task.nextDue)} · every {task.intervalDays}d
+                {relativeDue(task.nextDue)} · {t('sched_every', { n: task.intervalDays })}
               </p>
             </div>
             {onComplete && (
@@ -60,7 +63,7 @@ export default function ScheduleList({
                 onClick={() => onComplete(task.id)}
                 className="rounded-lg bg-leaf-100 px-3 py-1.5 text-xs font-semibold text-leaf-700 hover:bg-leaf-200"
               >
-                Done
+                {t('sched_done')}
               </button>
             )}
           </li>

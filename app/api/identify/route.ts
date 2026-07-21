@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { anthropic, MODEL } from '@/lib/anthropic';
+import { DEFAULT_LOCALE, isLocale, languageName, translate } from '@/lib/i18n';
 import type { IdentifyResult } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -46,6 +47,15 @@ If the image clearly shows a plant, set "identified" to true and fill everything
 
 If the image does NOT show a plant, or is too blurry/dark to tell, set "identified" to false, put a short kind explanation in "message", set the string fields to "", confidence to "low", difficulty to "easy", and "schedule" to [].`;
 
+/**
+ * Language directive appended to the instruction. Free-text fields are written
+ * in the target language; the enum fields that drive UI logic/styling stay as
+ * their exact English values.
+ */
+function languageDirective(language: string): string {
+  return `\n\nWrite ALL human-readable text in ${language}: commonName, message, every value inside "care" (light, water, soil, humidity, temperature, summary), and every schedule "label". Keep "scientificName" as the Latin botanical name. Keep these fields as EXACT English enum values (do not translate them): "confidence" ("high"|"medium"|"low"), "care.difficulty" ("easy"|"moderate"|"hard"), and each schedule "type" ("water"|"fertilize"|"rotate"|"repot"|"mist").`;
+}
+
 /** Extract a JSON object from model text, tolerating stray prose or code fences. */
 function extractJson(text: string): string {
   const fenced = /```(?:json)?\s*([\s\S]*?)```/.exec(text);
@@ -59,7 +69,7 @@ function extractJson(text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  let body: { image?: string };
+  let body: { image?: string; locale?: string };
   try {
     body = await req.json();
   } catch {
@@ -69,6 +79,9 @@ export async function POST(req: NextRequest) {
   if (!body.image) {
     return NextResponse.json({ error: 'Missing "image".' }, { status: 400 });
   }
+
+  const locale = isLocale(body.locale) ? body.locale : DEFAULT_LOCALE;
+  const instruction = INSTRUCTION + languageDirective(languageName(locale));
 
   const parsed = parseDataUrl(body.image);
   if (!parsed || !SUPPORTED_MEDIA.has(parsed.mediaType)) {
@@ -98,7 +111,7 @@ export async function POST(req: NextRequest) {
                 data: parsed.data,
               },
             },
-            { type: 'text', text: INSTRUCTION },
+            { type: 'text', text: instruction },
           ],
         },
       ],
@@ -108,8 +121,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           identified: false,
-          message:
-            "I couldn't process that image. Try a clear, well-lit photo of a single plant.",
+          message: translate(locale, 'home_notIdentified'),
         } satisfies Partial<IdentifyResult>,
         { status: 200 },
       );

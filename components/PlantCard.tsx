@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import type { Plant } from '@/lib/types';
 import { dueToday } from '@/lib/schedule';
+import { useI18n } from '@/components/I18nProvider';
 
 export default function PlantCard({ plant }: { plant: Plant }) {
+  const { t } = useI18n();
   const dueCount = dueToday([plant]).length;
   return (
     <Link
@@ -23,7 +27,7 @@ export default function PlantCard({ plant }: { plant: Plant }) {
       </div>
       {dueCount > 0 && (
         <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-600">
-          {dueCount} due
+          {t('plant_due', { n: dueCount })}
         </span>
       )}
     </Link>

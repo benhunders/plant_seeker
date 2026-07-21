@@ -13,6 +13,10 @@ guidance, ask follow-up care questions, and keep a care schedule over time.
   - `POST /api/chat` — plant context + messages → a care answer.
 - **Local storage** — saved plants and schedules live in the browser
   (`localStorage`). No accounts, no backend database.
+- **Languages** — English, Norwegian, and Thai. A switcher in the header sets
+  the UI language (persisted in `localStorage`) **and** the language Claude
+  replies in for identification, care tips, and chat. Translations live in
+  `lib/i18n.ts`; the React context is `components/I18nProvider.tsx`.
 
 ## Getting started
 
