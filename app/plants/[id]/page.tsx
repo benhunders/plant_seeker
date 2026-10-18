@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { use } from 'react';
 import CareCard from '@/components/CareCard';
 import ScheduleList from '@/components/ScheduleList';
 import ChatBox from '@/components/ChatBox';
@@ -13,9 +12,9 @@ import { useI18n } from '@/components/I18nProvider';
 export default function PlantDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = use(params);
+  const { id } = params;
   const router = useRouter();
   const { plants, ready, updatePlant, removePlant } = usePlants();
   const { t } = useI18n();
